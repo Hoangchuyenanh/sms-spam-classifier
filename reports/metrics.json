@@ -1,0 +1,45 @@
+{
+  "raw_rows": 5574,
+  "unique_rows": 5159,
+  "train_rows": 4127,
+  "test_rows": 1032,
+  "test_spam_rows": 128,
+  "test_fraction": 0.2,
+  "random_seed": 42,
+  "confusion_matrix_labels": [
+    "ham",
+    "spam"
+  ],
+  "majority_baseline": {
+    "accuracy": 0.876,
+    "spam_precision": 0.0,
+    "spam_recall": 0.0,
+    "spam_f1": 0.0,
+    "confusion_matrix": [
+      [
+        904,
+        0
+      ],
+      [
+        128,
+        0
+      ]
+    ]
+  },
+  "tfidf_logistic_regression": {
+    "accuracy": 0.9816,
+    "spam_precision": 0.9098,
+    "spam_recall": 0.9453,
+    "spam_f1": 0.9272,
+    "confusion_matrix": [
+      [
+        892,
+        12
+      ],
+      [
+        7,
+        121
+      ]
+    ]
+  }
+}
