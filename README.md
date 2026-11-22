@@ -19,6 +19,21 @@ Invoke-WebRequest -UseBasicParsing -Uri 'https://archive.ics.uci.edu/static/publ
 
 Open [the local demo](http://127.0.0.1:8501). Select a sample or enter an English SMS, then select **Classify message**. Press **Ctrl+C** in the terminal to stop the app.
 
+### Batch CSV classification
+
+1. Save a comma-separated UTF-8 `.csv` file. The header must include `message` exactly once. Other columns are optional. Put messages containing commas in double quotes.
+2. Under **Batch CSV classification**, upload the file and select **Classify CSV**. The app uses the same trained model as single-message classification.
+3. Review the results and select **Download predictions**. The download, `sms-predictions.csv`, contains `message` and `prediction` and preserves the original text and row order. Nonblank messages receive `ham` or `spam`.
+
+```csv
+message
+"Hey, are we still meeting for lunch tomorrow?"
+""
+Congratulations! You have won a free cash prize. Reply WIN now to claim.
+```
+
+Blank or whitespace-only messages stay in place with an empty prediction. The app shows how many it skipped. Empty and header-only files, missing or duplicate `message` columns, invalid UTF-8, and malformed rows produce an error. Each row that contains fields must have the same number of fields as the header.
+
 ## Model and evaluation
 
 The [UCI SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+collection) contains 5,574 labeled messages. After normalizing whitespace, removing case-insensitive duplicates, and dropping conflicting labels, 5,159 messages remained. An 80/20 stratified split with seed 42 produced a held-out test set of 1,032 messages, including 128 spam messages. TF-IDF learns its vocabulary and weights from the training split.
@@ -37,8 +52,10 @@ This score describes one test split of an older English SMS dataset. Similar mes
 | File | Purpose |
 | --- | --- |
 | `train.py` | Prepare data, fit both models, and save the trained pipeline and evaluation. |
-| `app.py` | Load the trained pipeline and classify one SMS at a time. |
+| `app.py` | Run the Streamlit app for single-message and batch CSV classification. |
+| `batch.py` | Validate CSV uploads, classify message rows, and export predictions. |
 | `reports/metrics.json` | Record the split sizes, scores, and confusion matrices. |
+| `tests/test_app.py` and `tests/test_batch.py` | Check the Streamlit workflow and batch CSV processing. |
 | `tests/test_training.py` | Check duplicate handling and metrics for the spam class. |
 | `data/README.md` | Attribute the original dataset and document the input format. |
 
