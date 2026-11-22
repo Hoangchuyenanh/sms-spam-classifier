@@ -1,6 +1,7 @@
 import joblib
 import streamlit as st
 
+from batch import CSVInputError, classify_csv, export_predictions
 from train import MODEL_PATH
 
 NORMAL_EXAMPLE = "Hey, are we still meeting for lunch tomorrow?"
@@ -9,6 +10,10 @@ SPAM_EXAMPLE = "Congratulations! You have won a free cash prize. Reply WIN now t
 
 def use_example(message: str) -> None:
     st.session_state["message"] = message
+
+
+def clear_batch_results() -> None:
+    st.session_state.pop("batch_results", None)
 
 
 st.set_page_config(page_title="SMS Spam Classifier", layout="centered")
@@ -43,3 +48,32 @@ if st.button("Classify message", type="primary"):
             st.warning("Prediction: spam")
         else:
             st.success("Prediction: normal message")
+
+st.divider()
+st.subheader("Batch CSV classification")
+uploaded_csv = st.file_uploader(
+    "Upload a UTF-8 CSV with a message column",
+    type=["csv"],
+    on_change=clear_batch_results,
+)
+if uploaded_csv is not None and st.button("Classify CSV", key="classify_csv"):
+    pipeline = joblib.load(MODEL_PATH)
+    try:
+        st.session_state["batch_results"] = classify_csv(uploaded_csv.getvalue(), pipeline)
+    except CSVInputError as error:
+        st.error(str(error))
+
+results = st.session_state.get("batch_results")
+if results is not None:
+    blank_count = int(results["prediction"].eq("").sum())
+    if blank_count:
+        noun = "message" if blank_count == 1 else "messages"
+        st.warning(f"Skipped {blank_count} blank {noun}.")
+    st.dataframe(results, hide_index=True)
+    st.download_button(
+        "Download predictions",
+        data=export_predictions(results),
+        file_name="sms-predictions.csv",
+        mime="text/csv",
+        on_click="ignore",
+    )
